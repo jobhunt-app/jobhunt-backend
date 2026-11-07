@@ -37,8 +37,9 @@ backend/
       speech/         ASR/TTS interfaces (mock interview)
       telemetry.py
     tests/
-  scraper/            gRPC scraper service: one async adapter per source
-    sources/          linkedin.py, staffam.py, greenhouse.py, ashby.py, lever.py, himalayas.py, telegram.py, …
+  scraper/            gRPC scraper service (project folder)
+    scraper/          the Python package (gRPC server, rate limiting, dedupe, …)
+      sources/        linkedin.py, staffam.py, greenhouse.py, ashby.py, lever.py, himalayas.py, telegram.py, …
     tests/fixtures/   recorded HTML/JSON responses
 proto/                scraper.proto (and interview.proto if used)
 evals/                golden sets + runners (job analysis, tailoring honesty)
@@ -73,8 +74,13 @@ docs/                 plan, architecture, adr/
 ## Commands (fill in as they come to exist)
 
 ```bash
-cd backend/api && uv sync && uv run uvicorn app.main:app --reload
-uv run pytest && uv run ruff check . && uv run mypy app
+uv sync                                    # from repo root: one .venv for the whole workspace
+uv tool install pre-commit && pre-commit install   # once per clone
+pre-commit run --all-files                 # every check: ruff, ruff format, mypy per service
+uv run ruff check . && uv run ruff format --check .
+cd backend/api && uv run pytest && uv run mypy app tests
+cd backend/scraper && uv run pytest && uv run mypy scraper tests
+cd backend/api && uv run uvicorn app.main:app --reload   # once #3 exists
 docker compose -f infra/docker-compose.yml up --build
 ```
 
