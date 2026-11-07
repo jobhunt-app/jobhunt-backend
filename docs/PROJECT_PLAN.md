@@ -1,5 +1,15 @@
 # JobHunt App: project plan
 
+## Repos
+
+The product is split across three repos (planned to live together in one GitHub organization):
+
+- **Backend (this repo):** API service, scraper service, database, LLM, speech, evals, infra.
+- **Web frontend (separate repo, not created yet):** React + TypeScript + Vite.
+- **Mobile (separate repo, later):** React Native.
+
+Milestones below describe the whole product. UI items are built in the frontend repo; in this repo a milestone is done when the API side is done and tested.
+
 ## Why
 
 Two goals at once:
@@ -50,9 +60,9 @@ Details: `docs/architecture.md`.
 Each ends in something demoable, merged by PR. **Maps to** shows which line of the job description it rehearses.
 
 ### M0: Foundations
-- Monorepo layout from `CLAUDE.md`; `uv` backend; Vite + TS frontend.
+- Backend repo layout from `CLAUDE.md`; `uv` backend. (The frontend is scaffolded in its own repo, see M1.)
 - FastAPI app with `/health`; `pydantic-settings`; `.env.example`.
-- ruff, mypy, pytest, ESLint, Vitest and pre-commit wired up.
+- ruff, mypy, pytest and pre-commit wired up.
 - docker-compose with Postgres 16 + pgvector.
 - **Done when:** compose starts the DB, the API serves `/health`, and linters plus a first test pass.
 - **Maps to:** Python backend, tests.
@@ -61,6 +71,7 @@ Each ends in something demoable, merged by PR. **Maps to** shows which line of t
 - Tables: `profiles`, `jobs`, `job_sources`, `applications` (status, notes, timestamps), `status_history`, `cvs` (master and tailored, JSON), `cover_letters`.
 - `scripts/import_legacy.py`: imports `profile.json`, `jobs.csv` (with statuses and notes), `cv/master.json`, `cv/tailored/*.json` and `cover_letters/*.md` from `~/Documents/job-hunt`.
 - REST endpoints: list and filter jobs, update status and notes, get the CV.
+- **Frontend repo:** scaffold the web app (Vite + React + TS) in its own repo and connect it to this API (API base URL from env, CORS enabled here).
 - React: a jobs table (search, filters by location bucket, source, AI roles, status) and a job detail page with status buttons. Feature parity with the old `jobs.html`.
 - **Done when:** the imported data shows in the UI and status changes persist in Postgres.
 - **Maps to:** FastAPI async, new features.

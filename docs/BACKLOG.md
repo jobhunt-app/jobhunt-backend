@@ -6,14 +6,12 @@ Generated from `scripts/github_setup.py`. The live board is the GitHub Project.
 
 _Monorepo, tooling, FastAPI skeleton, Postgres + pgvector, CI basics._
 
-- **Scaffold the monorepo layout** · type:chore, area:infra  
+- **Scaffold the backend repo layout** · type:chore, area:infra  
   Create the folder structure from CLAUDE.md so every later ticket has a home.
 - **Backend tooling: uv, ruff, mypy --strict, pytest, pre-commit** · type:chore, area:backend  
   One-command quality checks for both Python packages.
 - **FastAPI skeleton with /health and typed settings** · type:feature, area:backend  
   A running async API with configuration from the environment.
-- **Frontend scaffold: Vite + React + TypeScript** · type:chore, area:frontend  
-  A strict-TS React app with routing, data fetching and tests ready.
 - **docker-compose with Postgres 16 + pgvector** · type:infra, area:infra  
   Local database identical to production's engine.
 - **GitHub Actions: lint, type-check and test on every PR** · type:ci, area:infra  
