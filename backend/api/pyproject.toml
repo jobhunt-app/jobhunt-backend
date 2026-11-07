@@ -1,0 +1,11 @@
+[project]
+name = "jobhunt-api"
+description = "FastAPI service: the API the web and mobile clients talk to"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
