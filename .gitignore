@@ -8,3 +8,7 @@ dist/
 .mypy_cache/
 .ruff_cache/
 .pytest_cache/
+.idea/
+
+# Local personal data (CVs, exports): never committed
+data/
