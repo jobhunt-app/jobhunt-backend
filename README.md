@@ -7,7 +7,7 @@ A full-stack job-search assistant: an async scraper streams jobs from company ca
 - Plan and milestones: [docs/PROJECT_PLAN.md](docs/PROJECT_PLAN.md)
 - Business case & requirements: [docs/BUSINESS.md](docs/BUSINESS.md)
 - Architecture: [docs/architecture.md](docs/architecture.md)
-- Backlog: [docs/BACKLOG.md](docs/BACKLOG.md) · tickets: [GitHub Issues](https://github.com/tiiikk/jobhunt-app/issues) grouped by [milestone](https://github.com/tiiikk/jobhunt-app/milestones) · [project board](https://github.com/users/tiiikk/projects/1)
+- Backlog: [docs/BACKLOG.md](docs/BACKLOG.md) · tickets: [GitHub Issues](https://github.com/jobhunt-app/jobhunt-backend/issues) grouped by [milestone](https://github.com/jobhunt-app/jobhunt-backend/milestones) · [project board](https://github.com/users/tiiikk/projects/1)
 
 This repo is the **backend** (API + scraper). The React web app and a React Native mobile app live in separate repos (coming later).
 
