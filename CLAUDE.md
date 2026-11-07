@@ -2,6 +2,8 @@
 
 A full-stack rebuild of Tigran's personal job-search tool. It scrapes job boards and company career pages, scores jobs against his profile, tracks applications, and uses an LLM to tailor CVs and cover letters, plus a voice mock-interview mode.
 
+**This repo is the backend** (API service + scraper service). Clients live in their own repos, not created yet: a **web frontend** (React) and later a **mobile app** (React Native). They talk to this repo only through its API.
+
 The original works today as a Python script plus a static HTML page in `~/Documents/job-hunt/`. Use it as the **reference implementation** for sources, filters and CV rendering (`jobhunt.py`, `profile.json`, `cv/master.json`, `cv/build_cv.py`, `template.html`, and the rules in its `CLAUDE.md`). **Don't modify that folder**: it's in daily use. Read from it, port its logic here.
 
 The owner (Tigran) is building this **himself, with Claude Code as a pair**, to learn the stack of an upcoming work project (from February 2027). **Learning beats speed.** Explain non-obvious decisions briefly, let him make the design calls, and don't generate a whole milestone in one go.
@@ -16,10 +18,10 @@ Full brief and milestones: `docs/PROJECT_PLAN.md`. Architecture: `docs/architect
 - **Service-to-service streaming:** gRPC (`grpcio`, `grpc.aio`, protos in `proto/`). The scraper runs as its own service and streams results to the API.
 - **Speech (voice mock interview):** Azure AI Speech (`azure-cognitiveservices-speech`) streaming ASR and TTS, behind `app/speech/`.
 - **Observability:** Langfuse (LLM traces, prompt management, evals) + OpenTelemetry → Azure Monitor / Application Insights (`azure-monitor-opentelemetry`).
-- **Frontend:** React + TypeScript + Vite, TanStack Query (+ TanStack Table for the job list), React Router. Server-Sent Events or WebSocket for live updates.
+- **Frontend (separate repo, not here):** React + TypeScript + Vite, TanStack Query (+ TanStack Table for the job list), React Router. This repo serves it REST plus Server-Sent Events or WebSocket for live updates, with CORS for its origin.
 - **PDF rendering:** port `cv/build_cv.py` (HTML → PDF via headless Chromium; Playwright inside the container).
 - **Containers & CI/CD:** Docker (multi-stage), docker-compose for local; Azure DevOps Pipelines (YAML) → Azure Container Registry → Azure Container Apps.
-- **Tests:** pytest + pytest-asyncio, httpx `AsyncClient`, `respx` for mocking job-board HTTP (recorded fixtures, no live scraping in tests); LLM mocked in unit tests; a golden eval set for LLM behaviour. Frontend: Vitest + React Testing Library.
+- **Tests:** pytest + pytest-asyncio, httpx `AsyncClient`, `respx` for mocking job-board HTTP (recorded fixtures, no live scraping in tests); LLM mocked in unit tests; a golden eval set for LLM behaviour.
 
 ## Repo layout (target)
 
@@ -39,7 +41,6 @@ backend/
     sources/          linkedin.py, staffam.py, greenhouse.py, ashby.py, lever.py, himalayas.py, telegram.py, …
     tests/fixtures/   recorded HTML/JSON responses
 proto/                scraper.proto (and interview.proto if used)
-frontend/
 evals/                golden sets + runners (job analysis, tailoring honesty)
 scripts/              one-off tools, e.g. import from ~/Documents/job-hunt
 infra/                docker-compose.yml, azure-pipelines/*.yml, (stretch) k8s/
@@ -60,11 +61,12 @@ docs/                 plan, architecture, adr/
 - **Async all the way.** No blocking calls in handlers; wrap unavoidable sync SDK calls in `asyncio.to_thread`.
 - Config via `pydantic-settings`; `.env.example` lists every variable; **never commit secrets**.
 - Full type hints; `mypy --strict` on backend packages. Pydantic models for every request, response and LLM structured output.
-- `ruff check` + `ruff format`; frontend ESLint + Prettier, strict TypeScript.
+- `ruff check` + `ruff format`.
 - Prompts live in `app/llm/prompts/*.md` or Langfuse prompt management, never as scattered inline strings.
 - **Every LLM call is traced** in Langfuse (latency, tokens, cost); tool calls validated through Pydantic before execution.
 - Tests with every feature; scrapers are tested against recorded fixtures.
-- Small commits, conventional messages (`feat:`, `fix:`, `test:`, `docs:`), one milestone per branch, merged by PR with a self-review checklist.
+- **One branch per ticket (GitHub issue)**, named `<type>/<issue#>-<short-slug>` (e.g. `chore/1-monorepo-layout`, `feat/3-fastapi-health`), branched from `main`, merged by PR with a self-review checklist. The PR body includes `Closes #<issue#>`.
+- Small commits, conventional messages with optional scope (`feat:`, `fix:`, `test:`, `docs:`, `chore:`, `ci:`, e.g. `chore(backend): add ruff config`).
 - Notable decisions → short ADRs in `docs/adr/NNN-title.md`.
 - **Don't commit or push unless Tigran asks.**
 
@@ -73,7 +75,6 @@ docs/                 plan, architecture, adr/
 ```bash
 cd backend/api && uv sync && uv run uvicorn app.main:app --reload
 uv run pytest && uv run ruff check . && uv run mypy app
-cd frontend && npm install && npm run dev && npm test
 docker compose -f infra/docker-compose.yml up --build
 ```
 
