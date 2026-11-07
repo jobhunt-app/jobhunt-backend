@@ -3,9 +3,20 @@ name = "jobhunt-api"
 description = "FastAPI service: the API the web and mobile clients talk to"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "fastapi>=0.162.2",
+    "pydantic-settings>=2.16.2",
+    "python-json-logger>=4.2.0",
+    "uvicorn>=0.54.0",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+]
