@@ -1,0 +1,53 @@
+# Runs on every `git commit`, only against the staged files (except mypy, see below).
+# Install once per clone:  uv tool install pre-commit && pre-commit install
+# Run on everything:       pre-commit run --all-files
+
+repos:
+  # Generic file hygiene. These hooks run in pre-commit's own isolated environment.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: ["--markdown-linebreak-ext=md"]  # two trailing spaces = line break in Markdown
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: detect-private-key
+
+  # Python checks run through `uv run`, so they use the exact ruff/mypy versions from
+  # uv.lock and see the project's installed dependencies (FastAPI, Pydantic, ...).
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+
+      # mypy needs the whole package to type-check imports correctly, so it ignores the
+      # staged file list and checks the service whenever any of its files change.
+      # One hook per service: both have a `tests` package, which mypy can't check together.
+      - id: mypy-api
+        name: mypy (api)
+        entry: bash -c 'cd backend/api && uv run mypy app tests'
+        language: system
+        files: ^backend/api/
+        types: [python]
+        pass_filenames: false
+
+      - id: mypy-scraper
+        name: mypy (scraper)
+        entry: bash -c 'cd backend/scraper && uv run mypy scraper tests'
+        language: system
+        files: ^backend/scraper/
+        types: [python]
+        pass_filenames: false
