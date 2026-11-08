@@ -11,4 +11,6 @@ A full-stack job-search assistant: an async scraper streams jobs from company ca
 
 This repo is the **backend** (API + scraper). The React web app and a React Native mobile app live in separate repos (coming later).
 
+Built by me with [Claude Code](https://claude.com/claude-code) as a pair-programming partner: I make the design decisions and write the core code, Claude helps with boilerplate, explanations and reviews. That's why commits carry a `Co-Authored-By: Claude` line.
+
 _Work in progress. See the Status table in the plan._
