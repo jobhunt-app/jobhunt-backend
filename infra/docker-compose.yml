@@ -1,0 +1,20 @@
+name: jobhunt
+
+services:
+  db: # --name (sort of)
+    image: pgvector/pgvector:pg16       # the image
+    environment: # -e
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: jobhunt
+    ports: # -p
+      - "127.0.0.1:5432:5432"
+    volumes: # -v
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:                               # declares the named volume
