@@ -164,7 +164,7 @@ Each ends in something demoable, merged by PR. **Maps to** shows which line of t
 
 | Milestone | Status | Notes |
 |---|---|---|
-| M0 Foundations | not started | |
+| M0 Foundations | done (2026-11-09) | uv workspace, FastAPI `/health` with DB check, Postgres + pgvector in compose, pre-commit, GitHub Actions CI required on `main`. Frontend moved to its own repo. |
 | M1 Data model + UI | not started | |
 | M2 Async scraper | not started | |
 | M3 gRPC scraper service | not started | |
