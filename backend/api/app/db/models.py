@@ -1,5 +1,7 @@
+from datetime import date, datetime
 from typing import Any
 
+from sqlalchemy import DateTime, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -14,3 +16,20 @@ class Profile(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     settings: Mapped[dict[str, Any]] = mapped_column(JSONB)
+
+
+class Job(Base):
+    __tablename__ = "jobs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    url: Mapped[str] = mapped_column(unique=True)
+    source: Mapped[str] = mapped_column(index=True)
+    title: Mapped[str]
+    company: Mapped[str | None]
+    location: Mapped[str | None]
+    location_bucket: Mapped[str] = mapped_column(index=True)
+    posted_at: Mapped[date | None] = mapped_column(index=True)
+    description: Mapped[str | None]
+    salary: Mapped[str | None]
+    first_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
