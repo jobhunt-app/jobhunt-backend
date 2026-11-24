@@ -1,0 +1,126 @@
+from datetime import date, datetime
+from enum import StrEnum
+from typing import Any
+
+from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, UniqueConstraint, func
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class ApplicationStatus(StrEnum):
+    new = "new"
+    saved = "saved"
+    applied = "applied"
+    interview = "interview"
+    rejected = "rejected"
+    not_relevant = "not_relevant"
+    expired = "expired"
+
+
+class StatusSource(StrEnum):
+    user = "user"
+    assistant = "assistant"
+    inbox = "inbox"
+
+
+class CvKind(StrEnum):
+    master = "master"
+    tailored = "tailored"
+
+
+class Profile(Base):
+    __tablename__ = "profiles"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str]
+    settings: Mapped[dict[str, Any]] = mapped_column(JSONB)
+
+
+class Job(Base):
+    __tablename__ = "jobs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    url: Mapped[str] = mapped_column(unique=True)
+    source: Mapped[str] = mapped_column(index=True)
+    title: Mapped[str]
+    company: Mapped[str | None]
+    location: Mapped[str | None]
+    location_bucket: Mapped[str] = mapped_column(index=True)
+    posted_at: Mapped[date | None] = mapped_column(index=True)
+    description: Mapped[str | None]
+    salary: Mapped[str | None]
+    first_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    last_seen: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class JobMatch(Base):
+    __tablename__ = "job_matches"
+    __table_args__ = (UniqueConstraint("job_id", "profile_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id", ondelete="CASCADE"))
+    profile_id: Mapped[int] = mapped_column(ForeignKey("profiles.id", ondelete="CASCADE"))
+    score: Mapped[float]
+    matched: Mapped[str | None]
+    open_to_you: Mapped[str]
+
+
+class Application(Base):
+    __tablename__ = "applications"
+    __table_args__ = (UniqueConstraint("job_id", "profile_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id"))
+    profile_id: Mapped[int] = mapped_column(ForeignKey("profiles.id"), index=True)
+    status: Mapped[ApplicationStatus] = mapped_column(
+        Enum(ApplicationStatus, native_enum=False, create_constraint=True), index=True
+    )
+    notes: Mapped[str | None]
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class StatusHistory(Base):
+    __tablename__ = "status_history"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    application_id: Mapped[int] = mapped_column(ForeignKey("applications.id"), index=True)
+    from_status: Mapped[ApplicationStatus | None] = mapped_column(
+        Enum(ApplicationStatus, native_enum=False, create_constraint=True, name="from_status")
+    )
+    to_status: Mapped[ApplicationStatus] = mapped_column(
+        Enum(ApplicationStatus, native_enum=False, create_constraint=True)
+    )
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    source: Mapped[StatusSource] = mapped_column(
+        Enum(StatusSource, native_enum=False, create_constraint=True)
+    )
+
+
+class Cv(Base):
+    __tablename__ = "cvs"
+    __table_args__ = (
+        CheckConstraint("(kind = 'tailored') = (job_id IS NOT NULL)", name="tailored_has_job"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    profile_id: Mapped[int] = mapped_column(ForeignKey("profiles.id"), index=True)
+    kind: Mapped[CvKind] = mapped_column(Enum(CvKind, native_enum=False, create_constraint=True))
+    job_id: Mapped[int | None] = mapped_column(ForeignKey("jobs.id"), index=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class CoverLetter(Base):
+    __tablename__ = "cover_letters"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    job_id: Mapped[int] = mapped_column(ForeignKey("jobs.id"), index=True)
+    profile_id: Mapped[int] = mapped_column(ForeignKey("profiles.id"), index=True)
+    text: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
