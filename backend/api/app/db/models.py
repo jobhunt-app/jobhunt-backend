@@ -2,7 +2,7 @@ from datetime import date, datetime
 from enum import StrEnum
 from typing import Any
 
-from sqlalchemy import DateTime, Enum, ForeignKey, UniqueConstraint, func
+from sqlalchemy import CheckConstraint, DateTime, Enum, ForeignKey, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -25,6 +25,11 @@ class StatusSource(StrEnum):
     user = "user"
     assistant = "assistant"
     inbox = "inbox"
+
+
+class CvKind(StrEnum):
+    master = "master"
+    tailored = "tailored"
 
 
 class Profile(Base):
@@ -95,3 +100,17 @@ class StatusHistory(Base):
     source: Mapped[StatusSource] = mapped_column(
         Enum(StatusSource, native_enum=False, create_constraint=True)
     )
+
+
+class Cv(Base):
+    __tablename__ = "cvs"
+    __table_args__ = (
+        CheckConstraint("(kind = 'tailored') = (job_id IS NOT NULL)", name="tailored_has_job"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    profile_id: Mapped[int] = mapped_column(ForeignKey("profiles.id"), index=True)
+    kind: Mapped[CvKind] = mapped_column(Enum(CvKind, native_enum=False, create_constraint=True))
+    job_id: Mapped[int | None] = mapped_column(ForeignKey("jobs.id"), index=True)
+    data: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
