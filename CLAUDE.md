@@ -80,7 +80,9 @@ pre-commit run --all-files                 # every check: ruff, ruff format, myp
 uv run ruff check . && uv run ruff format --check .
 cd backend/api && uv run pytest && uv run mypy app tests
 cd backend/scraper && uv run pytest && uv run mypy scraper tests
-cd backend/api && uv run uvicorn app.main:app --reload   # once #3 exists
+cd backend/api && uv run uvicorn app.main:app --reload
+cd backend/api && uv run alembic upgrade head            # apply migrations to the dev DB
+cd backend/api && uv run alembic revision --autogenerate -m "..."   # then READ the draft
 docker compose -f infra/docker-compose.yml up --build
 ```
 

@@ -42,6 +42,7 @@ cp backend/api/.env.example backend/api/.env     # then adjust values if needed
 ```bash
 docker compose -f infra/docker-compose.yml up db   # Postgres 16 + pgvector on localhost:5432
 
+cd backend/api && uv run alembic upgrade head            # create/upgrade the tables
 cd backend/api && uv run uvicorn app.main:app --reload   # API on http://localhost:8000 (docs at /docs)
 ```
 
@@ -49,9 +50,17 @@ cd backend/api && uv run uvicorn app.main:app --reload   # API on http://localho
 
 ```bash
 pre-commit run --all-files                         # everything CI's `checks` job runs
-cd backend/api && uv run pytest                    # needs the db container running
+cd backend/api && uv run pytest                    # needs the db container; creates a throwaway jobhunt_test DB
 cd backend/scraper && uv run pytest
 ```
+
+## Database migrations
+
+1. Change the models in `backend/api/app/db/models.py`.
+2. `uv run alembic revision --autogenerate -m "..."` and **read the draft**: autogenerate misses CHECK constraints, extensions and renames.
+3. `uv run alembic upgrade head`.
+
+Never edit or delete a migration that has been applied or merged; write a new one.
 
 ## Notable decisions
 
