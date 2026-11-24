@@ -21,6 +21,12 @@ class ApplicationStatus(StrEnum):
     expired = "expired"
 
 
+class StatusSource(StrEnum):
+    user = "user"
+    assistant = "assistant"
+    inbox = "inbox"
+
+
 class Profile(Base):
     __tablename__ = "profiles"
 
@@ -71,4 +77,21 @@ class Application(Base):
     notes: Mapped[str | None]
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class StatusHistory(Base):
+    __tablename__ = "status_history"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    application_id: Mapped[int] = mapped_column(ForeignKey("applications.id"), index=True)
+    from_status: Mapped[ApplicationStatus | None] = mapped_column(
+        Enum(ApplicationStatus, native_enum=False, create_constraint=True, name="from_status")
+    )
+    to_status: Mapped[ApplicationStatus] = mapped_column(
+        Enum(ApplicationStatus, native_enum=False, create_constraint=True)
+    )
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    source: Mapped[StatusSource] = mapped_column(
+        Enum(StatusSource, native_enum=False, create_constraint=True)
     )
